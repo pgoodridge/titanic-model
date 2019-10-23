@@ -49,7 +49,7 @@ def load_files(path):
     
     dfs = []
     for path, dirs, files in os.walk(path):
-        for file in files:
+        for file in sorted(files):
             if '.csv' in file:
                 dfs.append(pd.read_csv(os.path.join(path, file)))
     return dfs
