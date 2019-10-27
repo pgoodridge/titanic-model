@@ -70,9 +70,7 @@ def catogoricals_pipeline(categorical_features):
 def model_ensemble(model_types):
     
     rf = RandomForestClassifier(n_estimators = 10)
-    ada = AdaBoostClassifier()
-    xg = GradientBoostingClassifier()
-    models = [xg, rf, ada]
+    models = [rf]
     
     
     return list(zip(model_types, models))
@@ -95,8 +93,7 @@ def model_pipeline(grid, categorical_features, imp_estimators, model_types):
                     ('cd2', hf.ColumnDropper(categorical_features, convert = True))
                 ])),
             ('num_imputer', num_pipeline(imp_estimators)),
-            ('voter', VotingClassifier(estimators = model_ensemble(model_types), 
-                n_jobs = -1, voting = 'soft'))
+            ('rf', RandomForestClassifier())
     ])
     
    
@@ -165,19 +162,10 @@ model_types = ['xg', 'rf', 'ada']
 #Small grid so that running the file is quick.  In practice, this grid would
 #include hundreds of hyperparameter combinations.
 composite_grid = {
-    'voter__rf__min_samples_leaf': [2,5],
-    'voter__rf__min_samples_split': [5],
-    'voter__rf__max_depth' : [20],
-    'voter__rf__n_estimators': [500],
-
-    'voter__xg__learning_rate': [.05],
-    'voter__xg__max_depth': list(range(4,5,1)),
-    'voter__xg__n_estimators': [300],
-    'voter__xg__max_features' : [.6],
-    'voter__xg__subsample': [.6],
-
-    'voter__ada__learning_rate': [1],
-    'voter__ada__n_estimators': [300]
+    'rf__min_samples_leaf': [2,5],
+    'rf__min_samples_split': [5],
+    'rf__max_depth' : [20],
+    'rf__n_estimators': [500],
 }
 
 fit_model(composite_grid, categorical_features, model_types)
