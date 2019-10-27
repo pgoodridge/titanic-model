@@ -65,6 +65,12 @@ def count_cabins(col):
         return 0
     
 def cabin_preprocess(df):
+
+    import numpy as np
+    import pandas as pd
+    
+    if type(df) == np.ndarray:
+        df = pd.DataFrame(df)
     
     df['cabin_count'] = df.Cabin.map(count_cabins)
     df.Cabin = df.Cabin.fillna('u')
@@ -93,6 +99,7 @@ def name_preprocess(df):
 
 def ticket_preprocess(df):
     
+    
     df['Ticket'] = df.Ticket.str.contains('[A-Z a-z]')
     
     return df
@@ -110,15 +117,21 @@ def fare_preprocess(df):
 #Exactly as the name describes, but only works with pandas DFs
 class ColumnDropper(TransformerMixin):
     
+
+    
     def __init__ (self, cols, convert = False):
         self.cols = cols
         self.convert = convert
         
     def transform(self, df):
-        if self.convert == False:
-            return df.drop(columns = self.cols)
+        
+        import numpy as np
+        import pandas as pd
+    
+        if type(df) == np.ndarray:
+            return pd.DataFrame(df).drop(columns = self.cols)
         else:
-            return df.drop(columns = self.cols).to_numpy()
+            return df.drop(columns = self.cols)
     
     def fit(self, *_):
         return self
