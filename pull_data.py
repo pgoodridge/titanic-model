@@ -7,7 +7,7 @@ Created on Fri Oct  4 18:20:56 2019
 import os
 import zipfile
 from HelperFuncs import shape_check, load_files
-
+import json
 
 #This allows the user to change the dataset name if Kaggle has moved the location
 #of the Titanic contest
@@ -77,6 +77,11 @@ with zipfile.ZipFile('titanic data/titanic.zip', 'r') as zip_ref:
 
 #load data from the local filesystem
 dfs = load_files('titanic data/titanic files')
+data = dfs[1].to_json(orient = 'records')
+
+
+with open('test.json', 'w') as f:
+    json.dump(data, f)
 
 #confirm the data loaded correctly (see HelperFuns.py for more details)
 shape_check(dfs[2], (891,12), .8, 'Train')
