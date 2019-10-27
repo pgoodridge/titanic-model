@@ -118,7 +118,7 @@ class ColumnDropper(TransformerMixin):
         if self.convert == False:
             return df.drop(columns = self.cols)
         else:
-            return df.drop(columns = self.cols).to_numpy()
+            return df.drop(columns = self.cols)
     
     def fit(self, *_):
         return self
