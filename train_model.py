@@ -108,10 +108,10 @@ def model_pipeline(grid, categorical_features, imp_estimators, model_types):
 #score_model file
 
 def pickle_files(obj, fname):
+    from sklearn.externals import joblib
     
     try:
-        with open('{}.pickle'.format(fname), 'wb') as f:
-            pkl.dump(obj, f)
+        joblib.dump(obj, '{}.joblib'.format(fname))
     except:
         print('Problem pickling file {}'.format(fname))
         
@@ -152,7 +152,7 @@ def fit_model(grid_params, categorical_features, model_types):
     #we need to save both models and the randomly chosen x_test and 
     #y_test splits.  I would prefer scoring the training data here and the
     #testing data on the score_model script.
-    objs = [raw_pipeline, cv, x_test, y_test]
+    objs = [raw_pipeline]
     save_objs(objs)
 
     return
