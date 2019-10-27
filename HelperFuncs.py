@@ -4,7 +4,7 @@ Created on Fri Oct  4 18:19:43 2019
 
 @author: pgood
 """
-from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.base import TransformerMixin
 
 ###########Anything needed in more than one file is included here#############
 
@@ -106,24 +106,6 @@ def fare_preprocess(df):
 
 #####################Generic pipeline helper Classes#########################
     
-#This checks to make sure data in the pipeline looks as expected
-#An NA check will be added in a future version
-class Debug(BaseEstimator, TransformerMixin):
-
-
-    def transform(self, X):
-           
-        shape = X.shape
-        #cells = shape[0]*shape[1] 
-            
-        #print("NA ratio: {:.2f}".format(na_count(X, cells)))
-        print('Shape: {}'.format(shape))
-    
-        return X
-
-    def fit(self, X, y=None, **fit_params):
-        return self
-
 
 #Exactly as the name describes, but only works with pandas DFs
 class ColumnDropper(TransformerMixin):

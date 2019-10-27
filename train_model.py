@@ -85,7 +85,6 @@ def model_pipeline(grid, categorical_features, imp_estimators, model_types):
     
     raw_pipeline = Pipeline([
             ('cder', hf.ColumnDropper(['PassengerId', 'Ticket'])),
-            ('cdebug', hf.Debug()),
             ('ccs', hf.ColumnProcess(hf.cabin_preprocess)),
             ('name', hf.ColumnProcess(hf.name_preprocess)),
             #('ticket', ColumnProcess(ticket_preprocess)),
@@ -95,9 +94,7 @@ def model_pipeline(grid, categorical_features, imp_estimators, model_types):
                     ('cat_preprocess', catogoricals_pipeline(categorical_features)), 
                     ('cd2', hf.ColumnDropper(categorical_features, convert = True))
                 ])),
-            ('udebug', hf.Debug()),
             ('num_imputer', num_pipeline(imp_estimators)),
-            ('idebug', hf.Debug()),
             ('voter', VotingClassifier(estimators = model_ensemble(model_types), 
                 n_jobs = -1, voting = 'soft'))
     ])
