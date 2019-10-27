@@ -4,5 +4,5 @@ matplotlib
 kaggle==1.5.6
 requests==2.18.4
 pandas==0.24.2
-scikit_learn==0.21.3
+scikit_learn==0.20.2
 xgboost==0.90
