@@ -233,7 +233,6 @@ model_types = ['xg', 'rf', 'ada']
 #Small grid so that running the file is quick.  In practice, this grid would
 #include hundreds of hyperparameter combinations.
 composite_grid = {
-    'union__cat_preprocess__cat__cat_imputer__add_indicator': [False, True],
     'voter__rf__min_samples_leaf': [2,5],
     'voter__rf__min_samples_split': [5],
     'voter__rf__max_depth' : [20],
