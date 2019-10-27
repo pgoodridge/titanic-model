@@ -7,13 +7,12 @@ Created on Sat Oct  5 09:53:55 2019
 
 from HelperFuncs import *
 import pickle as pkl
-import xgboost as xgb
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.compose import ColumnTransformer
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import SimpleImputer, IterativeImputer
+from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.ensemble import RandomForestClassifier, ExtraTreesRegressor, AdaBoostClassifier, VotingClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier,\
+    GradientBoostingClassifier
 from sklearn.model_selection import GridSearchCV, train_test_split
 
 
@@ -106,9 +105,7 @@ def fare_preprocess(df):
 
 def num_pipeline(n_estimators):
     
-    impute_rf = ExtraTreesRegressor(n_estimators=n_estimators)
-    num_imputer = IterativeImputer(estimator = impute_rf, 
-        initial_strategy ='median')
+    num_imputer = SimpleImputer(strategy ='median')
     
     return num_imputer
 
@@ -139,7 +136,7 @@ def model_ensemble(model_types):
     
     rf = RandomForestClassifier(n_estimators = 10)
     ada = AdaBoostClassifier()
-    xg = xgb.XGBClassifier(silent=1, nthread = -1)
+    xg = GradientBoostingClassifier()
     models = [xg, rf, ada]
     
     
@@ -172,7 +169,7 @@ def model_pipeline(grid, categorical_features, imp_estimators, model_types):
     
    
  
-    cv = GridSearchCV(raw_pipeline, grid, cv = 10, n_jobs = -1)
+    cv = GridSearchCV(raw_pipeline, grid, cv = 10)
     return cv, raw_pipeline
 
 #The next functions serve to save the objects we need in the 
@@ -237,8 +234,6 @@ model_types = ['xg', 'rf', 'ada']
 #include hundreds of hyperparameter combinations.
 composite_grid = {
     'union__cat_preprocess__cat__cat_imputer__add_indicator': [False, True],
-    'num_imputer__n_nearest_features': [5],
-    'num_imputer__add_indicator': [False],
     'voter__rf__min_samples_leaf': [2,5],
     'voter__rf__min_samples_split': [5],
     'voter__rf__max_depth' : [20],
@@ -247,8 +242,7 @@ composite_grid = {
     'voter__xg__learning_rate': [.05],
     'voter__xg__max_depth': list(range(4,5,1)),
     'voter__xg__n_estimators': [300],
-    'voter__xg__colsample_bytree' : [.6],
-    'voter__xg__reg_lambda': [.1],
+    'voter__xg__max_features' : [.6],
     'voter__xg__subsample': [.6],
 
     'voter__ada__learning_rate': [1],
