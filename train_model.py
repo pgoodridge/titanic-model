@@ -5,7 +5,7 @@ Created on Sat Oct  5 09:53:55 2019
 @author: pgood
 """
 
-from HelperFuncs import *
+import HelperFuncs as hf
 import pickle as pkl
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.compose import ColumnTransformer
@@ -18,87 +18,22 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 
 #load the training file into memeory as a pandas DF and create all the splits
 #we need for fitting/tuning.
-def load_data(test_size, shape = (891,12)):
+def my_load_data(test_size, shape = (891,12)):
     
-    dfs = load_files('titanic data/titanic files')
+    dfs = hf.load_files('titanic data/titanic files')
     
     train_raw = dfs[2]
-    shape_check(train_raw, shape, .8, 'Train')
+    hf.shape_check(train_raw, shape, .8, 'Train')
     
     y = train_raw['Survived']
     train_raw = train_raw.drop(columns = 'Survived')
     
      
     x_train, x_test, y_train, y_test = train_test_split(train_raw, y, 
-        test_size = test_size, shuffle = True)
+        test_size = test_size,train_size = .7)
     
     return x_train, x_test, y_train, y_test, train_raw, y
 
-#Cabins associated with a ticket are separated by a space on the Cabin line.  
-#There might be correlation between the number of Cabins in a group (large families)
-#and survival
-def count_cabins(col):
-    
-    try:
-        return len(col.split())
-    except:
-        return 0
-    
-#The Cabin also has a letter associated with it, likely indicating the area
-#of the ship it is in.  We definitely want that data.
-
-def cabin_preprocess(df):
-    
-    df['cabin_count'] = df.Cabin.map(count_cabins)
-    df.Cabin = df.Cabin.fillna('u')
-    df['cabin_type'] = df.Cabin.map(lambda x: 'u' in x)
-    
-    return df.drop(columns = 'Cabin')
-
-#We can determine whether a woman is married or not with their salutation.
-#Boys could also be identified with the "master" salutation, but that is just
-#a combination of age and gender, two existing variables.
-
-def name_flags(col):
-    
-    try:
-        if 'Miss.' in col:
-            return 'miss'
-        elif 'Mrs.' in col:
-            return 'mrs'
-        else:
-            return 'un'
-        
-    except:
-        return 'un'
-
-def name_preprocess(df):
-    
-    df['Name'] = df.Name.map(name_flags)
-    
-    return df
-
-#Some ticket numbers contain letters.  We flag these in case there is any
-#correlation with survival. (not used based on EDA)
-
-def ticket_preprocess(df):
-    
-    df['Ticket'] = df.Ticket.str.contains('[A-Z a-z]')
-    
-    return df
-    
-#We want to determine the full party size.  Since 1 is added, it isn't just
-#a linear combination of Parch and SibSp.
-#The fare variable is the combined fare for everyone in the party.  We
-#create a variable for fare per person.  This should be better at identifying
-#wealthy passengers
-    
-def fare_preprocess(df):
-    
-    df['family_size'] = df['Parch'] + df['SibSp'] + 1
-    df['Fare'] = df['Fare'] / df['family_size']
-    
-    return df
 
 #With numerics, we can use the new IterativeImputer, similar to the MICE
 #package in R
@@ -149,20 +84,20 @@ def model_ensemble(model_types):
 def model_pipeline(grid, categorical_features, imp_estimators, model_types):
     
     raw_pipeline = Pipeline([
-            ('cder', ColumnDropper(['PassengerId', 'Ticket'])),
-            ('cdebug', Debug()),
-            ('ccs', ColumnProcess(cabin_preprocess)),
-            ('name', ColumnProcess(name_preprocess)),
+            ('cder', hf.ColumnDropper(['PassengerId', 'Ticket'])),
+            ('cdebug', hf.Debug()),
+            ('ccs', hf.ColumnProcess(hf.cabin_preprocess)),
+            ('name', hf.ColumnProcess(hf.name_preprocess)),
             #('ticket', ColumnProcess(ticket_preprocess)),
-            ('fare', ColumnProcess(fare_preprocess)),
+            ('fare', hf.ColumnProcess(hf.fare_preprocess)),
             ('union', 
                  FeatureUnion([
                     ('cat_preprocess', catogoricals_pipeline(categorical_features)), 
-                    ('cd2', ColumnDropper(categorical_features, convert = True))
+                    ('cd2', hf.ColumnDropper(categorical_features, convert = True))
                 ])),
-            ('udebug', Debug()),
+            ('udebug', hf.Debug()),
             ('num_imputer', num_pipeline(imp_estimators)),
-            ('idebug', Debug()),
+            ('idebug', hf.Debug()),
             ('voter', VotingClassifier(estimators = model_ensemble(model_types), 
                 n_jobs = -1, voting = 'soft'))
     ])
@@ -197,7 +132,7 @@ def save_objs(objs):
 
 def fit_model(grid_params, categorical_features, model_types):
     
-    x_train, x_test, y_train, y_test, train_raw, y = load_data(test_size = .3)
+    x_train, x_test, y_train, y_test, train_raw, y = my_load_data(test_size = .3)
     
     #Fit a training model for hyperparameter optimization and scoring on the
     #training set (including a test set derived from the training set).
