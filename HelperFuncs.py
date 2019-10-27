@@ -4,7 +4,7 @@ Created on Fri Oct  4 18:19:43 2019
 
 @author: pgood
 """
-from sklearn.base import TransformerMixin
+from sklearn.base import TransformerMixin, BaseEstimator
 
 ###########Anything needed in more than one file is included here#############
 
@@ -118,7 +118,7 @@ class ColumnDropper(TransformerMixin):
         if self.convert == False:
             return df.drop(columns = self.cols)
         else:
-            return df.drop(columns = self.cols)
+            return df.drop(columns = self.cols).to_numpy()
     
     def fit(self, *_):
         return self

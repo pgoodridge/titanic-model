@@ -34,52 +34,33 @@ def my_load_data(test_size, shape = (891,12)):
     
     return x_train, x_test, y_train, y_test, train_raw, y
 
-
-#With numerics, we can use the new IterativeImputer, similar to the MICE
-#package in R
-
-def num_pipeline(n_estimators):
-    
-    num_imputer = SimpleImputer(strategy ='median')
-    
-    return num_imputer
-
 #With categoricals, we need to impute and one-hot encode them.  The iterative
 #imputer didn't seem to work with categoricals so we used the simpleimputer.
 
-def catogoricals_pipeline(categorical_features):
+def column_pipeline(numeric_features, categorical_features):
+    
+    numeric_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='median'))
+    ])
     
     categorical_transformer = Pipeline([
         ('cat_imputer', SimpleImputer(strategy ='most_frequent')),
         ('onehot', OneHotEncoder(handle_unknown='ignore', sparse = False))
     ])
-        
-
-    categorical_preprocessor = ColumnTransformer(
+    
+    preprocessor = ColumnTransformer(
         transformers=[
-            ('cat', categorical_transformer, categorical_features)
-    ])
+            ('num', numeric_transformer, numeric_features),
+            ('cat', categorical_transformer, categorical_features)])    
+        
     
-    return categorical_preprocessor
-
-
-#We are going to use the voting classifier ensemble method, so we need to
-#instantiate a list of models.  change the models and names to try a different
-#ensemble
-    
-def model_ensemble(model_types):
-    
-    rf = RandomForestClassifier(n_estimators = 10)
-    models = [rf]
-    
-    
-    return list(zip(model_types, models))
+    return preprocessor
 
 
 #A shape check step is added at key points to make sure the data shape
 #is what one would expect
 
-def model_pipeline(grid, categorical_features, imp_estimators, model_types):
+def model_pipeline(grid, categorical_features, numeric_features):
     
     raw_pipeline = Pipeline([
             ('cder', hf.ColumnDropper(['PassengerId', 'Ticket'])),
@@ -87,12 +68,7 @@ def model_pipeline(grid, categorical_features, imp_estimators, model_types):
             ('name', hf.ColumnProcess(hf.name_preprocess)),
             #('ticket', ColumnProcess(ticket_preprocess)),
             ('fare', hf.ColumnProcess(hf.fare_preprocess)),
-            ('union', 
-                 FeatureUnion([
-                    ('cat_preprocess', catogoricals_pipeline(categorical_features)), 
-                    ('cd2', hf.ColumnDropper(categorical_features, convert = True))
-                ])),
-            ('num_imputer', num_pipeline(imp_estimators)),
+            ('cols', column_pipeline(numeric_features, categorical_features)),
             ('rf', RandomForestClassifier())
     ])
     
@@ -124,15 +100,14 @@ def save_objs(objs):
         pickle_files(data, name)
 
 
-def fit_model(grid_params, categorical_features, model_types):
+def fit_model(grid_params, categorical_features, numeric_features):
     
     x_train, x_test, y_train, y_test, train_raw, y = my_load_data(test_size = .3)
     
     #Fit a training model for hyperparameter optimization and scoring on the
     #training set (including a test set derived from the training set).
     print("Running cross validation...")
-    cv, raw_pipeline = model_pipeline(composite_grid, 
-        categorical_features, 100, model_types)
+    cv, raw_pipeline = model_pipeline(composite_grid, categorical_features, numeric_features)
     cv.fit(x_train, y_train)
     
     print('Cross Validation Accuracy: {:.3f}'.format(cv.best_score_))
@@ -157,7 +132,7 @@ def fit_model(grid_params, categorical_features, model_types):
 
 
 categorical_features = ['Pclass', 'Embarked', 'cabin_type', 'Sex', 'Name']
-model_types = ['xg', 'rf', 'ada']
+numeric_features = ['Age', 'Fare', 'family_size', 'Parch', 'cabin_count']
 
 #Small grid so that running the file is quick.  In practice, this grid would
 #include hundreds of hyperparameter combinations.
@@ -168,4 +143,4 @@ composite_grid = {
     'rf__n_estimators': [500],
 }
 
-fit_model(composite_grid, categorical_features, model_types)
+fit_model(composite_grid, categorical_features, numeric_features)
