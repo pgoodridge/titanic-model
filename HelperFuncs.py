@@ -130,7 +130,7 @@ class ColumnNamer(TransformerMixin):
         if type(df) != pd.core.frame.DataFrame:
             columns = ['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch',
                    'Ticket', 'Fare', 'Cabin', 'Embarked']
-            df = pd.DataFrame(np.array(df)).transpose()
+            df = pd.DataFrame(np.array(df))
             df.columns = columns
             
         df = df.astype({'Fare': 'float64', 'SibSp': 'int64', 'Parch': 'int64',
