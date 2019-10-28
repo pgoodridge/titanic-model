@@ -127,6 +127,8 @@ class ColumnNamer(TransformerMixin):
         import pandas as pd
         import numpy as np
         
+        print(df)
+        print(type(df))
         if type(df) == np.ndarray:
             df = pd.DataFrame([df])
             
