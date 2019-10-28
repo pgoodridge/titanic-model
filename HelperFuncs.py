@@ -125,10 +125,15 @@ class ColumnNamer(TransformerMixin):
     def transform(self, df):
         
         import pandas as pd
-    
-        df = pd.DataFrame(df)
+        import numpy as np
+        
+        if type(df) == np.ndarray:
+            df = pd.DataFrame([df])
+            
         df.columns = ['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch',
        'Ticket', 'Fare', 'Cabin', 'Embarked']
+        df = df.astype({'Fare': 'float64', 'SibSp': 'int64', 'Parch': 'int64',
+            'Age': 'float64'})
         
         return df
     
