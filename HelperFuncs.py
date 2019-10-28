@@ -127,13 +127,12 @@ class ColumnNamer(TransformerMixin):
         import pandas as pd
         import numpy as np
         
-        print(df)
-        print(type(df))
         if type(df) == np.ndarray:
-            df = pd.DataFrame([df])
+            columns = ['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch',
+                   'Ticket', 'Fare', 'Cabin', 'Embarked']
+            df = pd.DataFrame(df).transpose()
+            df.columns = columns
             
-        df.columns = ['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch',
-       'Ticket', 'Fare', 'Cabin', 'Embarked']
         df = df.astype({'Fare': 'float64', 'SibSp': 'int64', 'Parch': 'int64',
             'Age': 'float64'})
         
