@@ -115,6 +115,26 @@ def fare_preprocess(df):
     
 
 #Exactly as the name describes, but only works with pandas DFs
+class ColumnNamer(TransformerMixin):
+    
+
+    
+    def __init__ (self):
+        pass
+        
+    def transform(self, df):
+        
+        import pandas as pd
+    
+        df = pd.DataFrame(df)
+        df.columns = ['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch',
+       'Ticket', 'Fare', 'Cabin', 'Embarked']
+        
+        return df
+    
+    def fit(self, *_):
+        return self    
+
 class ColumnDropper(TransformerMixin):
     
 

@@ -63,6 +63,7 @@ def column_pipeline(numeric_features, categorical_features):
 def model_pipeline(grid, categorical_features, numeric_features):
     
     raw_pipeline = Pipeline([
+            ('cner', hf.ColumnNamer()),
             ('cder', hf.ColumnDropper(['PassengerId', 'Ticket'])),
             ('ccs', hf.ColumnProcess(hf.cabin_preprocess)),
             ('name', hf.ColumnProcess(hf.name_preprocess)),
